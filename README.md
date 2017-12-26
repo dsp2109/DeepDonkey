@@ -1,2 +1,2 @@
-# DeepDonkey
+# DeepFish
 poker bot
