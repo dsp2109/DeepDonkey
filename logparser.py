@@ -22,7 +22,6 @@ def parse_betting_round(action_string):
                 round_actions.append('f')
             else:
                 raise ValueError("invalid action input")
-
     return round_actions
 
 def bet_lists(br_list):
@@ -79,7 +78,7 @@ def parse_cards(card_str):
     return cards
 
 def parse_handLog_line(line):
-    line = "STATE:1:r223c/cr383c/r1516f:Jd5c|Js8h/Qd6hQh/3c:383|-383:PokerCNN_2pn_2017|Intermission_2pn_2017"
+    #line = "STATE:1:r223c/cr383c/r1516f:Jd5c|Js8h/Qd6hQh/3c:383|-383:PokerCNN_2pn_2017|Intermission_2pn_2017"
     player_pos = [] #player name and player position
     actions = [] #action = [round, player_position, betting round, ante-flag]
     cards = [] # cards = [round, player_position, rank, suit]
