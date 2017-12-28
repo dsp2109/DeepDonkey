@@ -19,6 +19,7 @@ stack_sizes = 20000 #could be a list for each player
 hero = 0 #this is for one of the states, can also get the states for players up to num_players
 
 path = '2017 ACPC logs example/'
+# path = "/home/raghu/Downloads/processed_logs_2pn_2017/"
 
 suits = {'s':0 , 'h': 1, 'd': 2, 'c': 3}
 cardRanks ={"2": 0, "3": 1, "4": 2, "5":3, "6":4, "A":5, "7":6, "8":7, "9":8, "T":9, "J":10, "Q":11, "K":12, "A": 13}
