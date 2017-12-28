@@ -1,7 +1,3 @@
-# name/game/hands/seed Intermission.PokerCNN.1.0 project_acpc_server/holdem.nolimit.2p.reverse_blinds.game 3000 3937880454
-#--t_response 600000
-#--t_hand 600000
-#--t_per_hand 7200
 STATE:0:r200c/cr438f:6d2d|3s4d/KhJhTh:-200|200:Intermission_2pn_2017|PokerCNN_2pn_2017
 STATE:1:r223c/cr383c/r1516f:Jd5c|Js8h/Qd6hQh/3c:383|-383:PokerCNN_2pn_2017|Intermission_2pn_2017
 STATE:2:cr400f:Jc7c|9c5d:100|-100:Intermission_2pn_2017|PokerCNN_2pn_2017
