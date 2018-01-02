@@ -2,6 +2,13 @@ import os
 import numpy as np
 import constants
 import pandas,re
+import pymongo
+from pymongo import MongoClient
+
+client = MongoClient('mongodb://localhost:27017/')
+db = client.poker
+collection = db.dataframes
+
 
 def parse_betting_round(action_string):
     split_string = re.split('([r,c,f])',action_string)
@@ -116,28 +123,26 @@ def parse_handLog_line(line):
 
 def get_data_frame():
     df = pandas.DataFrame(columns=['Players', 'Steps', 'Cards', 'Result'])
-    count = 0
     listing = os.listdir(constants.path)
-    file_count = 0
+    count = 0
     for infile in listing:
         print "current file is: " + infile
         f = open(constants.path + infile, "r") #
         lines = f.readlines()
         for line in lines:
             if line[0:5]=="STATE":
-                # To only process lines with STATE defined.
                 result = parse_handLog_line(line.strip())
                 if result != None:
-                    df.loc[count] = [result[0], result[1], result[2], result[3]]
+                    #df.loc[count] = [result[0], result[1], result[2], result[3]]
+                    data_f ={"file_name" : infile+"STATE"+str(count+1) }
+                    data_f["players"] = result[0]
+                    data_f["steps"] = result[1]
+                    data_f["cards"] = result[2]
+                    data_f["result"] = result[3]
+                    post_id = collection.insert_one(data_f).inserted_id
+                    print "Saved data frame in mongo for filename " + infile+"STATE"+str(count+1)
                     count += 1
-        print "Formed DataFrame with rows   " + str(count) + " , file  " + str(file_count)
         f.close()
-        file_count += 1
-        if file_count % 50 == 0:
-            df.to_pickle("handLogs"+ str(file_count) + ".pickle")
-            df = df[0:0]
-            count = 0
     return df
 
-get_data_frame().to_pickle("all_logs_saved.pickle")
-print("all logs saved")
+get_data_frame()
