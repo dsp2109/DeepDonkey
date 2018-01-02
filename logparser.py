@@ -44,7 +44,7 @@ def split_by_card(card_glob):
     return result
 
 def parse_cards(card_str):
-    #splits cards and returns cards by [round, player, suit, rank] where for now community player = -1
+    #splits cards and returns cards by [round, player, rank, suit] where for now community player = -1
     cards = []
     card_list = split_cards(card_str)
     temp = [card_to_nums(x) for x in split_by_card(card_list[0])]
@@ -85,7 +85,7 @@ def parse_handLog_line(line):
         #Add a few betting rounds for antes?
         ante_action1 = [0, 0, 0,'c',0, 1] # start hand
         ante_action2 = [0, 1, 0,'r',50, 1] #small blind
-        ante_action3 = [0, 1, 1,'r', 100, 1] #big blind
+        ante_action3 = [0, 0, 1,'r', 100, 1] #big blind
         actions = [ante_action1, ante_action2, ante_action3]
         no_players = len(player_pos)
         #for each action
@@ -118,6 +118,7 @@ def get_data_frame():
     df = pandas.DataFrame(columns=['Players', 'Steps', 'Cards', 'Result'])
     count = 0
     listing = os.listdir(constants.path)
+    file_count = 0
     for infile in listing:
         print "current file is: " + infile
         f = open(constants.path + infile, "r") #
@@ -129,8 +130,14 @@ def get_data_frame():
                 if result != None:
                     df.loc[count] = [result[0], result[1], result[2], result[3]]
                     count += 1
-        print "Formed DataFrame with shape   " + str(df.shape)
+        print "Formed DataFrame with rows   " + str(count) + " , file  " + str(file_count)
         f.close()
+        file_count += 1
+        if file_count % 50 == 0:
+            df.to_pickle("handLogs"+ str(file_count) + ".pickle")
+            df = df[0:0]
+            count = 0
     return df
 
-print get_data_frame()
+get_data_frame().to_pickle("all_logs_saved.pickle")
+print("all logs saved")
