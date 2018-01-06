@@ -94,7 +94,7 @@ def create_episodes(handDf):
 	
 	handDf["total_player_steps"] = handDf["Steps"].apply(len)
 	handDf["player0_steps"] = handDf["Steps"] #NEEDS TO BE FIXED - WIP
-
+	
 	known_actions = df_steps[df_steps.index < current_step]
     known_cards = df_cards[((df_cards["player_position"] == -1) | (df_cards["player_position"] == player_pos)) &\
     (df_cards["bet round"] <= current_round)]
