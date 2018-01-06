@@ -3,11 +3,13 @@ import pandas as pd
 import constants
 #import tensorflow
 
-hand_log = pd.read_pickle("../handLogs50.pickle")
+hand_log = pd.read_pickle("fiveLogs.pickle")
 print("hand log loaded with shape: ", hand_log.shape)
 
+
+import pdb;pdb.set_trace()
 #Ok, now how do we represent the bet and card state?
-# We have: 
+# We have:
 #- betting rounds (pre-flop, flop, turn, river = 0, 1 ,2 ,3)
 #   - maximum raises per round (4 so [0, 1, 2 3])
 #- players (0, 1, -1 for dealer) *until trying multiplayer
@@ -16,12 +18,14 @@ print("hand log loaded with shape: ", hand_log.shape)
 #      - cost, which is negative of (reward - pot won if hand won)
 #
 
+ante_steps = 3
+
 #depth
 betRounds = 4
 max_raises = 4
 dealer_action = 1 #for dealing moments
 player_consolidated_layer = 1 #for giving the player the total hand and last action
-depth = betRounds*(max_raises* constants.num_players)+ player_consolidated_layer
+depth = betRounds*(max_raises)+ player_consolidated_layer
 depth_names = {"consol_layer":0, "first_act": 1, "first_flop_act":8, "first_turn_act":16,"first_river_act":24, "end_state":32}
 
 
@@ -31,18 +35,16 @@ height = ranks
 height_names = constants.cardRanks
 
 #width
-suits = 4
-players = 1 #this will also flag whether this a dealer move
-action_choice = 1 #including ante flag
+suits = 4 #2s3h 1 at [0,0] and [1,2]. Only shown in layers when first action of the round.
+players = 1 #flag for which player
+action_choice = 1 #including ante flag - DO NOT NEED?
 size_of_action_to_stay_in_hand = 1
-size_of_action_related_to_pot = 1
+size_of_action_related_to_pot = 1 #this number would be size_of_action_to_stay_in_hand / size_of_pot
 size_of_pot = 1
 size_of_stack = 1
 size_of_opponent_stack = 1
 betting_round = 1
 raising_round = 1
-
-constants.suits
 
 width = (suits + players + action_choice + size_of_action_to_stay_in_hand + size_of_action_related_to_pot + size_of_pot +\
 size_of_stack + size_of_opponent_stack+ betting_round+ raising_round)
@@ -61,65 +63,56 @@ def binarize_num(num, width = 13):
 	return [int(c) for c in bin_str]
 
 def depth_in_input_matrix(player_pos, bet_round, raise_round):
-	return player_consolidated_layer + bet_round*max_raises + raise_round*2 + player_pos 
+	return player_consolidated_layer + bet_round*max_raises + raise_round*2 + player_pos
 
-def create_player_state_layer(betting_round, raising_round, player, cards, action_to, action_to_pot_size, pot_size, stack, opp_stack, action = None):
+def create_player_state_layer(betting_round, raising_round, player, cards, action_to, action_to_pot_size, pot_size, stack, opp_stack, action):
 	#create numpy array for one layer of the inputs, based on the state
 	layer = blank_layer
 	layer[betting_round, width_names["betting_round"]] = 1
 	layer[raising_round, width_names["raise_round"]] = 1
 	layer[player, width_names["player"]] = 1
 	for card in cards:
-		layer[card[0]+3,card[1]] = 1
+		layer[card[1],card[0]+3] = 1
 
 	if action:
 		#set the action in this layer
 		layer[action, width_names["action_choice"]] = 1
 
-	layer[None,width_names["size_of_action_to_stay_in_hand"]] = binarize_num(action_to)
-	layer[None,width_names["size_of_action_related_to_pot"]] = binarize_num(action_to_pot_size)
-	layer[None,width_names["size_of_pot"]] = binarize_num(pot_size)
-	layer[None,width_names["size_of_stack"]] = binarize_num(stack)
+	layer[:,width_names["size_of_action_to_stay_in_hand"]] = binarize_num(action_to)
+	layer[:,width_names["size_of_action_related_to_pot"]] = binarize_num(action_to_pot_size)
+	layer[:,width_names["size_of_pot"]] = binarize_num(pot_size)
+	layer[:,width_names["size_of_stack"]] = binarize_num(stack)
 	layer[None,width_names["size_of_opponent_stack"]] = binarize_num(opp_stack)
-	
+
 	return layer
 
 def create_episodes(handDf):
 	#step columns = ["bet round", "player_position", "raising round", "action", "size_to", "ante-flag"]
 	#card columns=["bet round", "player_position", "rank", "suit"]
+	stepList, cardList = hand_log["Steps"][0], hand_log["Cards"][0]
 
-	cardSeries = handDf["Cards"]
-	stepSeries = handDf["Steps"]
-	ante_steps = 3
-	
+
 	handDf["total_player_steps"] = handDf["Steps"].apply(len)
-	handDf["player0_steps"] = handDf["Steps"] #NEEDS TO BE FIXED - WIP
-	
-	known_actions = df_steps[df_steps.index < current_step]
-    known_cards = df_cards[((df_cards["player_position"] == -1) | (df_cards["player_position"] == player_pos)) &\
-    (df_cards["bet round"] <= current_round)]
+	handDf["entire_state"] = None #the state when the hand is over
+	handDf["player0_episode"] = None #only p0 actions and zero out player 1's Cards
+	handDf["player1_episode"] = None #only p1 actions and zero out player 1's Cards
 
 
 
-	layer_depth = depth_in_input_matrix(player_pos, bet_round, raise_round)
-	result = pd.Dataframe(columns = "handId", "")
-
-	for i in range(constants.num_players):
-		player_steps = 
-	for i in range(furthest_depth):
-		pass
-	pass
-
+	#handDf["player0_steps"] = (handDf.loc[(handDf["Steps"][1] == 0) & (handDf["Steps"][5] == 0), "Steps"].apply(len) # RAGHU - does this work?
+	#handDf["player1_steps"] = handDf.loc[(handDf["Steps"][1] == 1) & (handDf["Steps"][5] == 0), "Steps"].apply(len)
+	#layer_depth = depth_in_input_matrix(player_pos, bet_round, raise_round)
+	result = pd.Dataframe(columns = ["handId", "player_pos", "step","observation","action", "reward", "done"]) #observation = game state
+	#deleted for loop - was meant to run over the 2 players and over however many steps
 
 #old - trying to replace
 def create_state_array(stepList, cardList):
-    
+
     df_steps = pd.DataFrame(stepList, columns = ["bet round", "player_position",\
                                                "raising round", "action", "size_to", "ante-flag"])
     df_cards = pd.DataFrame(cardList, columns=["bet round", "player_position", "rank", "suit"])
     num_steps = df_steps[df_steps["ante-flag"]==0]["ante-flag"].count()
     num_players = df_steps.player_position.max() + 1
-    
     player_pos = 0
     reward_to = 0
     arr = []
@@ -135,9 +128,7 @@ def create_state_array(stepList, cardList):
                        & (df_cards["bet round"] <= current_round)]
         done = step == num_steps - 1
         arr.append([player_pos, bet_round, raise_round, [known_actions, known_cards], reward_to, df_steps.iloc[step], done]) #TODO: figure out reward
-
     return arr #[player, bet round, [(state1, reward_transitioning_to, action, done)]]
-
 #for hand in hand_log:
 
 handArr = create_state_array
