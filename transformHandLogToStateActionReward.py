@@ -1,32 +1,63 @@
 import numpy as np
 import pandas as pd
 import constants
-import pymongo
+#import pymongo
 import pprint
 #act_array = np.array(0.22,0.35,0.5,0.7,1,1.5,2.5,5)
 
-from pymongo import MongoClient
-client = MongoClient('localhost', 27017)
+# from pymongo import MongoClient
+# client = MongoClient('localhost', 27017)
 
-db = client.poker
-dfs = db.dataframes
+# db = client.poker
+# dfs = db.dataframes
 
-for df in dfs.find():
-	# call the loop of the main function here
-	pprint.pprint(df)
-	hand_log = df
+# for df in dfs.find():
+# 	# call the loop of the main function here
+# 	pprint.pprint(df)
+# 	hand_log = df
 
-#hand_log = pd.read_pickle("../fiveLogs.pickle")
+hand_log = pd.read_pickle("../fiveLogs.pickle")
 
-depth = constants.betRounds*(max_raises)+ player_consolidated_layer
+depth = constants.betRounds*(constants.max_raises)+ constants.player_consolidated_layer
 depth_names = {"consol_layer":0, "first_act": 1, "first_flop_act":8, "first_turn_act":16,"first_river_act":24, "end_state":32}
 height = constants.ranks
 height_names = constants.cardRanks
-width = (constant.suits + constants.players + constants.action_choice + constants.ize_of_action_to_stay_in_hand + constants.size_of_action_related_to_pot + constants.ize_of_pot +\
+width = (constants.num_suits + constants.players + constants.action_choice + \
+	constants.size_of_action_to_stay_in_hand + constants.size_of_action_related_to_pot + \
+	constants.size_of_pot +\
 constants.size_of_stack + constants.size_of_opponent_stack+ constants.betting_round+ constants.raising_round)
-width_names = {"betting_round":0, "raise_round":1, "player":2, constants.suits.keys()[0]:3, constants.suits.keys()[1]:4,\
-constants.suits.keys()[2]:5, constants.suits.keys()[3]:6, "action_choice":7, "size_of_action_to_stay_in_hand":8, "size_of_action_related_to_pot":9,\
+width_names = {"betting_round":0, "raise_round":1, "player":2, constants.suits.keys()[0]:3, \
+constants.suits.keys()[1]:4, constants.suits.keys()[2]:5, constants.suits.keys()[3]:6,\
+"action_choice":7, "size_of_action_to_stay_in_hand":8, "size_of_action_related_to_pot":9,\
 "size_of_pot":10, "size_of_stack":11, "size_of_opponent_stack":12}
+
+#repeat from constants.py
+ante_steps = 3
+
+#depth
+betRounds = 4
+max_raises = 4
+dealer_action = 1 #for dealing moments
+player_consolidated_layer = 1 #for giving the player the total hand and last action
+ranks = 13# suit, rank
+
+action_choices = {"fold":0, "check": 1, "bet 0.22":2, "bet 0.35": 3,
+"bet 0.5": 4, "bet 0.7": 5, "raise 1": 6,"bet 1.5":7, "bet 2.5":8,
+"bet all":9}
+action_rounding = {"2":0.22, "3":0.35, "4":0.5, "5": 0.7,"6":1, "7":1.5, "8":2.5, "9":5}
+
+#width
+num_suits = 4 #2s3h 1 at [0,0] and [1,2]. Only shown in layers when first action of the round.
+players = 1 #flag for which player
+action_choice = 1 #including ante flag - DO NOT NEED?
+size_of_action_to_stay_in_hand = 1
+size_of_action_related_to_pot = 1 #this number would be size_of_action_to_stay_in_hand / size_of_pot
+size_of_pot = 1
+size_of_stack = 1
+size_of_opponent_stack = 1
+betting_round = 1
+raising_round = 1
+
 blank_state = np.zeros((height, width, depth)) #cards , (max_raises, cost/action)
 blank_layer = np.zeros((height,width))
 
@@ -35,7 +66,7 @@ def binarize_num(num, width = 13):
 	return [int(c) for c in bin_str]
 
 def depth_in_input_matrix(player_pos, bet_round, raise_round):
-	return player_consolidated_layer + bet_round*max_raises + raise_round*2 + player_pos
+	return constants.player_consolidated_layer + bet_round*constants.max_raises + raise_round*2 + player_pos
 
 def create_player_state_layer(betting_round, raising_round, player, cards, action_to, action_to_pot_size, pot_size, stack, opp_stack, action):
 	#create numpy array for one layer of the inputs, based on the state
@@ -82,11 +113,12 @@ def create_episodes(stepList, cardList):
 			if (raising_round == 0) and (player == 0):
 				if betting_round == 0:
 					action_to = 50
+					pot_size = 150
 				else:
 					action_to = 0
 			else:
 				action_to = stepList[step-1][4]
-			pot_size = pot_size + action_to
+			
 			action_to_pot_size = (action_to / pot_size)
 			opp_stack = opp_stack - action_to
 			#stack update your stack based on the action taken
@@ -106,6 +138,7 @@ def create_episodes(stepList, cardList):
 			#now, we have to divide up the states into player 0 and player 1 episodes.
 			#player 0, each game state is all layers at or below the current state. Zero out player 1's cards and the action chosen (because it can't know what it will choose)
 			stack = stack - size_to
+			pot_size = pot_size + size_to
 	result = pd.Dataframe(columns = ["handId", "player_pos", "step","observation","action", "reward", "done"]) #observation = game state
 create_episodes(hand_log["Steps"][0], hand_log["Cards"][0])
 

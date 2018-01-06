@@ -40,7 +40,7 @@ action_choices = {"fold":0, "check": 1, "bet 0.22":2, "bet 0.35": 3,
 action_rounding = {"2":0.22, "3":0.35, "4":0.5, "5": 0.7,"6":1, "7":1.5, "8":2.5, "9":5}
 
 #width
-suits = 4 #2s3h 1 at [0,0] and [1,2]. Only shown in layers when first action of the round.
+num_suits = 4 #2s3h 1 at [0,0] and [1,2]. Only shown in layers when first action of the round.
 players = 1 #flag for which player
 action_choice = 1 #including ante flag - DO NOT NEED?
 size_of_action_to_stay_in_hand = 1
