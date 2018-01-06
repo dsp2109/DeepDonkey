@@ -140,9 +140,10 @@ def get_data_frame():
                     data_f["cards"] = result[2]
                     data_f["result"] = result[3]
                     post_id = collection.insert_one(data_f).inserted_id
-                    print ("Saved data frame in mongo for filename " + infile+"STATE"+str(count+1))
+                    #print ("Saved data frame in mongo for filename " + infile+"STATE"+str(count+1))
                     count += 1
         f.close()
+        print ("Saved data frame in mongo for filename " + infile+"STATE"+str(count+1))
     return df
 
 get_data_frame()
