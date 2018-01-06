@@ -1,62 +1,34 @@
 import numpy as np
 import pandas as pd
 import constants
-#import tensorflow
+import pymongo
+import pprint
+#act_array = np.array(0.22,0.35,0.5,0.7,1,1.5,2.5,5)
 
-hand_log = pd.read_pickle("fiveLogs.pickle")
-print("hand log loaded with shape: ", hand_log.shape)
+from pymongo import MongoClient
+client = MongoClient('localhost', 27017)
 
+db = client.poker
+dfs = db.dataframes
 
-import pdb;pdb.set_trace()
-#Ok, now how do we represent the bet and card state?
-# We have:
-#- betting rounds (pre-flop, flop, turn, river = 0, 1 ,2 ,3)
-#   - maximum raises per round (4 so [0, 1, 2 3])
-#- players (0, 1, -1 for dealer) *until trying multiplayer
-#   - cards
-#      - action choice [r, c, f, collapse ante flag to this?]
-#      - cost, which is negative of (reward - pot won if hand won)
-#
+for df in dfs.find():
+	# call the loop of the main function here
+	pprint.pprint(df)
+	hand_log = df
 
-ante_steps = 3
+#hand_log = pd.read_pickle("../fiveLogs.pickle")
 
-#depth
-betRounds = 4
-max_raises = 4
-dealer_action = 1 #for dealing moments
-player_consolidated_layer = 1 #for giving the player the total hand and last action
-depth = betRounds*(max_raises)+ player_consolidated_layer
+depth = constants.betRounds*(max_raises)+ player_consolidated_layer
 depth_names = {"consol_layer":0, "first_act": 1, "first_flop_act":8, "first_turn_act":16,"first_river_act":24, "end_state":32}
-
-
-#height. I think I may use the 13 ranks as binary to represent size np.binary_rep(num, width = 13)
-ranks = 13# suit, rank
-height = ranks
+height = constants.ranks
 height_names = constants.cardRanks
-
-#width
-suits = 4 #2s3h 1 at [0,0] and [1,2]. Only shown in layers when first action of the round.
-players = 1 #flag for which player
-action_choice = 1 #including ante flag - DO NOT NEED?
-size_of_action_to_stay_in_hand = 1
-size_of_action_related_to_pot = 1 #this number would be size_of_action_to_stay_in_hand / size_of_pot
-size_of_pot = 1
-size_of_stack = 1
-size_of_opponent_stack = 1
-betting_round = 1
-raising_round = 1
-
-width = (suits + players + action_choice + size_of_action_to_stay_in_hand + size_of_action_related_to_pot + size_of_pot +\
-size_of_stack + size_of_opponent_stack+ betting_round+ raising_round)
+width = (constant.suits + constants.players + constants.action_choice + constants.ize_of_action_to_stay_in_hand + constants.size_of_action_related_to_pot + constants.ize_of_pot +\
+constants.size_of_stack + constants.size_of_opponent_stack+ constants.betting_round+ constants.raising_round)
 width_names = {"betting_round":0, "raise_round":1, "player":2, constants.suits.keys()[0]:3, constants.suits.keys()[1]:4,\
 constants.suits.keys()[2]:5, constants.suits.keys()[3]:6, "action_choice":7, "size_of_action_to_stay_in_hand":8, "size_of_action_related_to_pot":9,\
 "size_of_pot":10, "size_of_stack":11, "size_of_opponent_stack":12}
-
-
 blank_state = np.zeros((height, width, depth)) #cards , (max_raises, cost/action)
 blank_layer = np.zeros((height,width))
-print("input state shape is ", blank_state.shape)
-
 
 def binarize_num(num, width = 13):
 	bin_str = np.binary_rep(num, width = width)
@@ -73,41 +45,72 @@ def create_player_state_layer(betting_round, raising_round, player, cards, actio
 	layer[player, width_names["player"]] = 1
 	for card in cards:
 		layer[card[1],card[0]+3] = 1
-
 	if action:
 		#set the action in this layer
 		layer[action, width_names["action_choice"]] = 1
-
 	layer[:,width_names["size_of_action_to_stay_in_hand"]] = binarize_num(action_to)
 	layer[:,width_names["size_of_action_related_to_pot"]] = binarize_num(action_to_pot_size)
 	layer[:,width_names["size_of_pot"]] = binarize_num(pot_size)
 	layer[:,width_names["size_of_stack"]] = binarize_num(stack)
 	layer[:,width_names["size_of_opponent_stack"]] = binarize_num(opp_stack)
-
 	return layer
 
-def create_episodes(handDf):
+def create_episodes(stepList, cardList):
 	#step columns = ["bet round", "player_position", "raising round", "action", "size_to", "ante-flag"]
 	#card columns=["bet round", "player_position", "rank", "suit"]
-	stepList, cardList = hand_log["Steps"][0], hand_log["Cards"][0]
+	#stepList, cardList = hand_log["Steps"][0], hand_log["Cards"][0]
+	total_player_steps = len(stepList)
+	entire_state = [] #the state when the hand is over
+	player0_episode = [] #only p0 actions and zero out player 1's Cards
+	player1_episode = [] #only p1 actions and zero out player 1's Cards
+	#first build entire_state which contains all action, then build player 0 episode and player 1 episode
+	for step in range(total_player_steps):
+			#get all these things to build one layer: betting_round, raising_round, player, cards, action_to,
+			# action_to_pot_size, pot_size, stack, opp_stack, action
+			betting_round = stepList[step][0]
+			raising_round = stepList[step][2]
+			player = stepList[step][1]
+			#cardList[bet round == betting_round & player_postion == player or -1 for community]
+			#card columns=["bet round", "player_position", "rank", "suit"]
+			# raising_round == 0 because that is first moment of seeing it
+			if raising_round == 0:
+				cards = [] #rank, suit
+				for card in cardList:
+					if ((card[0] == betting_round) and ((player == card[1]) or (card[1] == - 1))):
+						cards.append(card[2:])
 
-
-	handDf["total_player_steps"] = handDf["Steps"].apply(len)
-	handDf["entire_state"] = None #the state when the hand is over
-	handDf["player0_episode"] = None #only p0 actions and zero out player 1's Cards
-	handDf["player1_episode"] = None #only p1 actions and zero out player 1's Cards
-
-
-
-	#handDf["player0_steps"] = (handDf.loc[(handDf["Steps"][1] == 0) & (handDf["Steps"][5] == 0), "Steps"].apply(len) # RAGHU - does this work?
-	#handDf["player1_steps"] = handDf.loc[(handDf["Steps"][1] == 1) & (handDf["Steps"][5] == 0), "Steps"].apply(len)
-	#layer_depth = depth_in_input_matrix(player_pos, bet_round, raise_round)
+			if (raising_round == 0) and (player == 0):
+				if betting_round == 0:
+					action_to = 50
+				else:
+					action_to = 0
+			else:
+				action_to = stepList[step-1][4]
+			pot_size = pot_size + action_to
+			action_to_pot_size = (action_to / pot_size)
+			opp_stack = opp_stack - action_to
+			#stack update your stack based on the action taken
+			action = -1 #action choice
+			act_ = stepList[step][3]
+			if act_ == 'f':
+				action = 0
+			elif (act_ == 'c' and size_to == 0):
+		 		#only if size_to is bet size to you - check number
+				action = 1 #check
+			else:
+				action_pot_frac = size_to/pot_size
+				action = (np.abs(constants.act_array - action_pot_frac).argmin()) + 2
+				#then bet or raised
+			entire_state.append(create_player_state_layer(betting_round, raising_round, player, cards, action_to, action_to_pot_size, pot_size, stack, opp_stack, action))
+			#at the end of this for loop we have the entire_state list of all the states in te ahand
+			#now, we have to divide up the states into player 0 and player 1 episodes.
+			#player 0, each game state is all layers at or below the current state. Zero out player 1's cards and the action chosen (because it can't know what it will choose)
+			stack = stack - size_to
 	result = pd.Dataframe(columns = ["handId", "player_pos", "step","observation","action", "reward", "done"]) #observation = game state
-	#deleted for loop - was meant to run over the 2 players and over however many steps
+create_episodes(hand_log["Steps"][0], hand_log["Cards"][0])
 
 #old - trying to replace
 def create_state_array(stepList, cardList):
-
     df_steps = pd.DataFrame(stepList, columns = ["bet round", "player_position",\
                                                "raising round", "action", "size_to", "ante-flag"])
     df_cards = pd.DataFrame(cardList, columns=["bet round", "player_position", "rank", "suit"])
@@ -129,11 +132,7 @@ def create_state_array(stepList, cardList):
         done = step == num_steps - 1
         arr.append([player_pos, bet_round, raise_round, [known_actions, known_cards], reward_to, df_steps.iloc[step], done]) #TODO: figure out reward
     return arr #[player, bet round, [(state1, reward_transitioning_to, action, done)]]
-#for hand in hand_log:
 
 handArr = create_state_array
-
 result = [] #[hand_num, player, [state1, state2,..., state_end], [reward1, reward2,...., reward_end], [done1, don2, done3,..., done_end]]
-
-import pdb; pdb.set_trace()
 print("end of file")
