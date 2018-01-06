@@ -76,26 +76,42 @@ def create_player_state_layer(betting_round, raising_round, player, cards, actio
 		#set the action in this layer
 		layer[action, width_names["action_choice"]] = 1
 
-	layer[,width_names["size_of_action_to_stay_in_hand"]] = binarize_num(action_to)
-	layer[,width_names["size_of_action_related_to_pot"]] = binarize_num(action_to_pot_size)
-	layer[,width_names["size_of_pot"]] = binarize_num(pot_size)
-	layer[,width_names["size_of_stack"]] = binarize_num(stack)
-	layer[,width_names["size_of_opponent_stack"]] = binarize_num(opp_stack)
-
-	[player_pos, bet_round, raise_round, [known_actions, known_cards], reward_to, action, done] = step
+	layer[None,width_names["size_of_action_to_stay_in_hand"]] = binarize_num(action_to)
+	layer[None,width_names["size_of_action_related_to_pot"]] = binarize_num(action_to_pot_size)
+	layer[None,width_names["size_of_pot"]] = binarize_num(pot_size)
+	layer[None,width_names["size_of_stack"]] = binarize_num(stack)
+	layer[None,width_names["size_of_opponent_stack"]] = binarize_num(opp_stack)
 	
+	return layer
 
+def create_episodes(handDf):
+	#step columns = ["bet round", "player_position", "raising round", "action", "size_to", "ante-flag"]
+	#card columns=["bet round", "player_position", "rank", "suit"]
+
+	cardSeries = handDf["Cards"]
+	stepSeries = handDf["Steps"]
+	ante_steps = 3
 	
-	pass
+	handDf["total_player_steps"] = handDf["Steps"].apply(len)
+	handDf["player0_steps"] = handDf["Steps"] #NEEDS TO BE FIXED - WIP
 
-def create_episodes(handArr):
+	known_actions = df_steps[df_steps.index < current_step]
+    known_cards = df_cards[((df_cards["player_position"] == -1) | (df_cards["player_position"] == player_pos)) &\
+    (df_cards["bet round"] <= current_round)]
+
+
 
 	layer_depth = depth_in_input_matrix(player_pos, bet_round, raise_round)
+	result = pd.Dataframe(columns = "handId", "")
+
+	for i in range(constants.num_players):
+		player_steps = 
 	for i in range(furthest_depth):
 		pass
 	pass
 
 
+#old - trying to replace
 def create_state_array(stepList, cardList):
     
     df_steps = pd.DataFrame(stepList, columns = ["bet round", "player_position",\
