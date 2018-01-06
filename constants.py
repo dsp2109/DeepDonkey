@@ -19,7 +19,7 @@ stack_sizes = 20000 #could be a list for each player
 
 hero = 0 #this is for one of the states, can also get the states for players up to num_players
 
-path = '~/processed_logs_2pn_2017/'
+path = '../processed_logs_2pn_2017/'
 #path = '2017 ACPC logs example/'
 # path = "/home/raghu/Downloads/processed_logs_2pn_2017/"
 
