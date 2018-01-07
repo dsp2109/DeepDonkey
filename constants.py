@@ -51,3 +51,15 @@ size_of_stack = 1
 size_of_opponent_stack = 1
 betting_round = 1
 raising_round = 1
+
+act_array = [0.22,0.35,0.5,0.7,1,1.5,2.5,5]
+action_choices = {"fold":0, "check": 1, "bet 0.22":2, "bet 0.35": 3,
+"bet 0.5": 4, "bet 0.7": 5, "raise 1": 6,"bet 1.5":7, "bet 2.5":8,
+"bet all":9}
+
+chip_divider = 10
+
+width_names = {"betting_round":0, "raise_round":1, "player":2, "suit0":3, \
+"suit1":4, "suit2":5, "suit3":6,"action_choice":7,\
+"size_of_action_to_stay_in_hand":8, "size_of_action_related_to_pot":9,\
+"size_of_pot":10, "size_of_stack":11, "size_of_opponent_stack":12}
