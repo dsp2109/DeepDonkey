@@ -4,7 +4,7 @@ import constants
 import pymongo
 import pprint
 #act_array = np.array(0.22,0.35,0.5,0.7,1,1.5,2.5,5)
-
+"""
 from pymongo import MongoClient
 client = MongoClient('localhost', 27017)
 
@@ -15,17 +15,17 @@ for df in dfs.find():
 	# call the loop of the main function here
 	pprint.pprint(df)
 	hand_log = df
+"""
+hand_log = pd.read_pickle("fiveLogs.pickle")
 
-#hand_log = pd.read_pickle("../fiveLogs.pickle")
-
-depth = constants.betRounds*(max_raises)+ player_consolidated_layer
+depth = constants.betRounds*(constants.max_raises)+ constants.player_consolidated_layer
 depth_names = {"consol_layer":0, "first_act": 1, "first_flop_act":8, "first_turn_act":16,"first_river_act":24, "end_state":32}
 height = constants.ranks
 height_names = constants.cardRanks
-width = (constant.suits + constants.players + constants.action_choice + constants.ize_of_action_to_stay_in_hand + constants.size_of_action_related_to_pot + constants.ize_of_pot +\
+width = (constants.suits + constants.players + constants.action_choice + constants.size_of_action_to_stay_in_hand + constants.size_of_action_related_to_pot + constants.size_of_pot +\
 constants.size_of_stack + constants.size_of_opponent_stack+ constants.betting_round+ constants.raising_round)
-width_names = {"betting_round":0, "raise_round":1, "player":2, constants.suits.keys()[0]:3, constants.suits.keys()[1]:4,\
-constants.suits.keys()[2]:5, constants.suits.keys()[3]:6, "action_choice":7, "size_of_action_to_stay_in_hand":8, "size_of_action_related_to_pot":9,\
+width_names = {"betting_round":0, "raise_round":1, "player":2, constants.suits_1.keys()[0]:3, constants.suits_1.keys()[1]:4,\
+constants.suits_1.keys()[2]:5, constants.suits_1.keys()[3]:6, "action_choice":7, "size_of_action_to_stay_in_hand":8, "size_of_action_related_to_pot":9,\
 "size_of_pot":10, "size_of_stack":11, "size_of_opponent_stack":12}
 blank_state = np.zeros((height, width, depth)) #cards , (max_raises, cost/action)
 blank_layer = np.zeros((height,width))
