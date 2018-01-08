@@ -231,5 +231,7 @@ for df in dfs.find():
 	count += 1
 	try:
 		output_df1, output_df2 = run_iteration(df)
-	db.outputs.insert(output_df1)
-	db.outputs.insert(output_df2)
+		db.outputs.insert(output_df1)
+		db.outputs.insert(output_df2)
+	except:
+		print("lost hand ",str(count))
