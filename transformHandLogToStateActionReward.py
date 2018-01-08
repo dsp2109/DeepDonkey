@@ -3,6 +3,8 @@ import pandas as pd
 import constants
 #import pymongo
 import pprint
+from bson.binary import Binary
+import pickle
 
 act_array = np.array(constants.act_array)
 
@@ -15,8 +17,7 @@ count = 0
 
 
 final_state_layer = 1 # last state.
-depth = constants.betRounds*(constants.max_raises)
-depth_names = {"consol_layer":0, "first_act": 1, "first_flop_act":8, "first_turn_act":16,"first_river_act":24, "end_state":32}
+depth = constants.betRounds*(constants.max_raises+1)
 height = constants.ranks
 height_names = constants.cardRanks
 width = (constants.num_suits + constants.players + constants.action_choice + \
@@ -63,7 +64,7 @@ def bin_array_to_base10(bin_array):
 	return np.sum(2**np.arange(len(bin_array))*bin_array[::-1])
 
 def depth_in_input_matrix(player_pos, bet_round, raise_round):
-	return bet_round*constants.max_raises + raise_round*2 + player_pos - (bet_round == 0)*1
+	return bet_round*(constants.max_raises+1) + raise_round*2 + player_pos - (bet_round == 0)*1
 
 def create_player_state_layer(betting_round, raising_round, player, cards, action, size_of_action, action_to,\
 	pot_size, p0_stack, p1_stack):
@@ -215,13 +216,11 @@ def create_entire_state(stepList, cardList, result):
 def run_iteration(hand_log):
 	try:
 		result = create_entire_state(hand_log["steps"], hand_log["cards"], hand_log["result"])
-		print("hand worked ", str(i))
 		epis_p0 = [result[0][0], result[1][0], result[2][0],result[3][0],result[4][0]]
 		epis_p1 = [result[0][1], result[1][1], result[2][1],result[3][1],result[4][1]]
 
-		return ep1, ep2
+		return epis_p0, epis_p1
 	except Exception as e:
-		import pdb;pdb.set_trace()
 		print ("Failed with exception: "+ str(e))
 
 for df in dfs.find():
@@ -231,7 +230,9 @@ for df in dfs.find():
 	count += 1
 	try:
 		output_df1, output_df2 = run_iteration(df)
-		db.outputs.insert(output_df1)
-		db.outputs.insert(output_df2)
-	except:
-		print("lost hand ",str(count))
+		thebytes = pickle.dumps(output_df1)
+		thebytes2 = pickle.dumps(output_df2)
+		db.outputs.insert({'bin-data-'+str(count)+"-1": Binary(thebytes)})
+		db.outputs.insert({'bin-data-'+str(count)+"-2": Binary(thebytes2)})
+	except Exception as e:
+		print("lost hand ",str(e))
