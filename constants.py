@@ -19,11 +19,12 @@ stack_sizes = 20000 #could be a list for each player
 
 hero = 0 #this is for one of the states, can also get the states for players up to num_players
 
-path = '2017 ACPC logs example/'
+path = '../processed_logs_2pn_2017/'
+#path = '2017 ACPC logs example/'
 # path = "/home/raghu/Downloads/processed_logs_2pn_2017/"
 
-suits_1 = {'s':0 , 'h': 1, 'd': 2, 'c': 3}
-cardRanks ={"2": 0, "3": 1, "4": 2, "5":3, "6":4, "A":5, "7":6, "8":7, "9":8, "T":9, "J":10, "Q":11, "K":12, "A": 13}
+suits = {'s':0 , 'h': 1, 'd': 2, 'c': 3}
+cardRanks ={"2": 0, "3": 1, "4": 2, "5":3, "6":4, "7":5, "8":6, "9":7, "T":8, "J":9, "Q":10, "K":11, "A": 12}
 
 ante_steps = 3
 
@@ -40,7 +41,7 @@ action_choices = {"fold":0, "check": 1, "bet 0.22":2, "bet 0.35": 3,
 action_rounding = {"2":0.22, "3":0.35, "4":0.5, "5": 0.7,"6":1, "7":1.5, "8":2.5, "9":5}
 
 #width
-suits = 4 #2s3h 1 at [0,0] and [1,2]. Only shown in layers when first action of the round.
+num_suits = 4 #2s3h 1 at [0,0] and [1,2]. Only shown in layers when first action of the round.
 players = 1 #flag for which player
 action_choice = 1 #including ante flag - DO NOT NEED?
 size_of_action_to_stay_in_hand = 1
@@ -50,3 +51,15 @@ size_of_stack = 1
 size_of_opponent_stack = 1
 betting_round = 1
 raising_round = 1
+
+act_array = [0.1, 0.25,0.4,0.55,0.7,1,1.5,2.5,5]
+action_choices = {"fold":0, "check_call_0": 1, "bet 0.1":2, "bet 0.25": 3,
+"bet 0.4": 4, "bet 0.55": 5, "bet 0.7": 6,"bet 1":7, "bet 1.5":8,"bet 2.5":9,
+"bet all":10} #how to teach bot not to bet an amount the becomes a call?
+
+chip_divider = 10
+
+width_names = {"betting_round":0, "raise_round":1, "player":2, "suit0":3, \
+"suit1":4, "suit2":5, "suit3":6,"action_choice":7,\
+"size_of_action":8, "size_to_stay_in_hand":9,\
+"size_of_pot":10, "size_of_p0stack":11, "size_of_p1stack":12}
