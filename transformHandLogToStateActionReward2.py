@@ -3,17 +3,20 @@ import pandas as pd
 import constants
 #import pymongo
 import pprint
-
 act_array = np.array(constants.act_array)
 
 from pymongo import MongoClient
-client = MongoClient('localhost', 27017)
-db = client.poker
-dfs = db.dataframes
+# client = MongoClient('localhost', 27017)
+
+# db = client.poker
+# dfs = db.dataframes
+
 count = 0
+
 #hand_log = pd.read_pickle("fiveLogs.pickle")
 
-
+def run_iteration(hand_log):
+# try:
 	final_state_layer = 1 # last state.
 	depth = constants.betRounds*(constants.max_raises)
 	depth_names = {"consol_layer":0, "first_act": 1, "first_flop_act":8, "first_turn_act":16,"first_river_act":24, "end_state":32}
@@ -30,6 +33,7 @@ count = 0
 	"size_of_action":8, "size_to_stay_in_hand":9,\
 	"size_of_pot":10, "size_of_p0stack":11, "size_of_p1stack":12}
 
+	print("line 36")
 	#repeat from constants.py
 	ante_steps = 3
 	#depth
@@ -209,27 +213,33 @@ count = 0
 			if not (result[0] + 100 == sum(rew[0])) & (result[1] + 50 == sum(rew[1])):
 				print("RESULT DOES NOT MATCH REWARD")
 				import pdb; pdb.set_trace()
-
-		return [obs, acts, rew, done, [len(rew[0]),len(rew[1])]]
-
-	def run_iteration(hand_log):
+		print("returning obs, acts, rew")
+		return obs, acts, rew, done, [len(rew[0]),len(rew[1])]
+	result = create_entire_state(hand_log["steps"][0], hand_log["cards"][0], hand_log["result"][0])
+	test = []
+	for i in range(1000):
 		try:
-			result = create_entire_state(hand_log["steps"], hand_log["cards"], hand_log["result"])
+			test.append(create_entire_state(hand_log["Steps"][i], hand_log["Cards"][i], hand_log["Result"][i]))
 			print("hand worked ", str(i))
-			epis_p0 = [result[0][0], result[1][0], result[2][0],result[3][0],result[4][0]]
-			epis_p1 = [result[0][1], result[1][1], result[2][1],result[3][1],result[4][1]]
+		except:
+			pass
+	df = pd.DataFrame(data = test, columns = ["obs", "acts", "reward", "done", "num_steps"])
+	#df.to_pickle("../test_episodes1000.pickle")
+	print("file complete, hands saved")
+	#import pdb;pdb.set_trace()
+	return df
+	# except Exception as e:
+	# 	print ("Failed with exception: "+ str(e))
 
-			return ep1, ep2
-		except Exception as e:
-			import pdb;pdb.set_trace()
-			print ("Failed with exception: "+ str(e))
+hand_log = {u'file_name': u'Hugh_iro.Slumbot.47.0.log', u'players': [u'Hugh_iro_2pn_2017', u'Slumbot_2pn_2017'], u'steps': [[0, 0, 0, u'c', 0, 1], [0, 1, 0, u'r', 50, 1], [0, 0, 1, u'r', 100, 1], [0, 1, 1, u'r', 200, 0], [0, 0, 2, u'f', 0, 0]], u'result': [-100, 100], u'cards': [[0, 0, 1, 1], [0, 0, 8, 3], [0, 1, 7, 2], [0, 1, 6, 1]]}
+output_df = run_iteration(hand_log)
 
-for df in dfs.find():
-	# call the loop of the main function here
-	pprint.pprint(df)
-	print ("Filecount: " + str(count))
-	count += 1
-	try:
-		output_df1, output_df2 = run_iteration(df)
-	db.outputs.insert(output_df1)
-	db.outputs.insert(output_df2)
+# for df in dfs.find():
+# 	# call the loop of the main function here
+# 	pprint.pprint(df)
+# 	print ("Filecount: " + str(count))
+# 	count += 1
+# 	hand_log = df
+# 	output_df = run_iteration(hand_log)
+# 	import pdb;pdb.set_trace()
+# 	db.outputs.insert(output_df)
