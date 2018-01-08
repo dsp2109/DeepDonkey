@@ -24,7 +24,7 @@ path = '../processed_logs_2pn_2017/'
 # path = "/home/raghu/Downloads/processed_logs_2pn_2017/"
 
 suits = {'s':0 , 'h': 1, 'd': 2, 'c': 3}
-cardRanks ={"2": 0, "3": 1, "4": 2, "5":3, "6":4, "A":5, "7":6, "8":7, "9":8, "T":9, "J":10, "Q":11, "K":12, "A": 13}
+cardRanks ={"2": 0, "3": 1, "4": 2, "5":3, "6":4, "7":5, "8":6, "9":7, "T":8, "J":9, "Q":10, "K":11, "A": 12}
 
 ante_steps = 3
 
@@ -52,14 +52,14 @@ size_of_opponent_stack = 1
 betting_round = 1
 raising_round = 1
 
-act_array = [0.22,0.35,0.5,0.7,1,1.5,2.5,5]
-action_choices = {"fold":0, "check": 1, "bet 0.22":2, "bet 0.35": 3,
-"bet 0.5": 4, "bet 0.7": 5, "raise 1": 6,"bet 1.5":7, "bet 2.5":8,
-"bet all":9}
+act_array = [0.1, 0.25,0.4,0.55,0.7,1,1.5,2.5,5]
+action_choices = {"fold":0, "check_call_0": 1, "bet 0.1":2, "bet 0.25": 3,
+"bet 0.4": 4, "bet 0.55": 5, "bet 0.7": 6,"bet 1":7, "bet 1.5":8,"bet 2.5":9,
+"bet all":10} #how to teach bot not to bet an amount the becomes a call?
 
 chip_divider = 10
 
 width_names = {"betting_round":0, "raise_round":1, "player":2, "suit0":3, \
 "suit1":4, "suit2":5, "suit3":6,"action_choice":7,\
-"size_of_action_to_stay_in_hand":8, "size_of_action_related_to_pot":9,\
-"size_of_pot":10, "size_of_stack":11, "size_of_opponent_stack":12}
+"size_of_action":8, "size_to_stay_in_hand":9,\
+"size_of_pot":10, "size_of_p0stack":11, "size_of_p1stack":12}
