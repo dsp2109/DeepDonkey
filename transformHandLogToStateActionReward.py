@@ -233,7 +233,9 @@ for i in range(1000):
 		print("hand worked ", str(i))
 	except:
 		import pdb; pdb.set_trace()
-import pdb; pdb.set_trace()
+
+pd.DataFrame(data = test, columns = ["obs", "acts", "reward", "done", "num_steps"]).to_pickle("../test_episodes1000.pickle")
+print("file complete, hands saved")
 # try:
 # 	hand_log.loc[0:10, "transformOutput"] = hand_log.iloc[0:10].apply(lambda row:\
 # 		create_entire_state(row['Steps'],row['Cards'], row["Result"]), axis=1)
