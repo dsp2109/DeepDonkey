@@ -12,9 +12,6 @@ from pymongo import MongoClient
 # dfs = db.dataframes
 
 count = 0
-
-#hand_log = pd.read_pickle("fiveLogs.pickle")
-
 def run_iteration(hand_log):
 # try:
 	final_state_layer = 1 # last state.
