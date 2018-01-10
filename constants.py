@@ -63,4 +63,7 @@ width_names = {"betting_round":0, "raise_round":1, "player":2, "suit0":3, \
 "suit1":4, "suit2":5, "suit3":6,"action_choice":7,\
 "size_of_action":8, "size_to_stay_in_hand":9,\
 "size_of_pot":10, "size_of_p0stack":11, "size_of_p1stack":12}
+<<<<<<< HEAD
 
+=======
+>>>>>>> f0d3d0445fab0e9464005da3cd3395b7d93a0ecd
